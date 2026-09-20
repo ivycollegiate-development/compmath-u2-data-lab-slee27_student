@@ -1,0 +1,26 @@
+name: grade
+
+on: [push, workflow_dispatch]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install matplotlib (not preinstalled on runners)
+        run: pip install --quiet matplotlib
+
+      - name: Run self-check (progress meter, not pass/fail)
+        id: selfcheck
+        run: |
+          python3 self_check.py | tee check_output.txt
+          echo "score=$(tail -1 check_output.txt)" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Summary
+        run: echo "### Lab check — ${{ steps.selfcheck.outputs.score }}" >> $GITHUB_STEP_SUMMARY
