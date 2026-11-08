@@ -27,6 +27,12 @@ git pull
 ls data/
 ```
 
+- This is the first thing that happens today — pull before you do anything else.
+- If `git pull` reports a conflict in `LESSONS/` or `self_check.py` (you edited a copy by accident), reset those files and pull again:
+  ```bash
+  git checkout -- LESSONS self_check.py
+  git pull
+  ```
 - If your clone lives somewhere else, `cd ~` first and check with `ls`.
 - Run every command today **from the repo root** (`~/compmath-u2-data-lab`). Every path in this lesson is relative to it.
 - The dataset for this project is `data/u2_campus_threat_daily.csv` (60 rows, synthetic, seed 20261027).
