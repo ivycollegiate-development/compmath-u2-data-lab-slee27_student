@@ -1,45 +1,32 @@
-# U2 L16 — Project Lab: Build Your Visualizations
+# U2 L16 — Project Lab: Prove the Audit, Finish the Charts
 
-**LO:** work day — prove your audit actually catches defects, then build Chart 2 and start Chart 3 with audience-aware analysis.
+**LO:** prove your audit catches defects with a drill run, then finish Chart 2 and Chart 3 with analysis for your audience — a complete chart set ready for tomorrow's peer review.
 
-**Estimated time:** 50 minutes (one period). This is a work day, and the checklist below is more than one period of work: **today's minimum target is the drill run plus Chart 2.** Chart 3 and the analysis polish continue in U2 L17.
+**One objective for today:** by the bell, `project_charts.py` produces all three PNGs and `analysis.md` has a paragraph for each.
 
----
-
-Today is a work day. Everything stays in **your own data-lab repo**.
+**Estimated time:** 50 minutes (one period). Re-timed from ~100. Today is the drill plus the two remaining charts — nothing else. Chart 1 was L15, peer review is L17.
 
 ---
 
-## PART 0 — OPEN YOUR REPO, AUDIT IT, THEN DRILL IT (15 min)
+Work in **your own data-lab repo**. Every command below assumes you are already in it.
+
+## PART 0 — PULL, RE-RUN, DRILL (10 min)
 
 ```bash
-pwd
 cd ~/compmath-u2-data-lab
 git pull
-```
-
-### Step 1 — Re-run your audit (3 min)
-
-```bash
 python3 clean_threats.py
 ```
 
-Confirm six `[PASS]` lines, `Rows out: 60`, `Rows dropped: 0`, and `All checks passed`.
+You should see six `[PASS]` lines, `Rows out: 60`, `Rows dropped: 0`, `All checks passed`. If not, fix the script before you touch a chart — you cannot chart a file your checker does not accept.
 
-**Write the output in your notes:**
-- Rows in: ______
-- Rows out: ______
-- Rows dropped: ______
-
-### Step 2 — Run the defect drill (10 min) — this is today's graded evidence
-
-Your audit reported 0 dropped. That number means nothing unless your checker would actually catch a broken row. Prove it:
+Now prove the checker actually checks:
 
 ```bash
 python3 clean_threats.py --drill
 ```
 
-The drill builds three deliberately broken rows in memory — it never touches your data file — and runs them through the same checks. **Expected output:**
+Expected:
 
 ```
 DRILL MODE -- 3 broken rows injected in memory; nothing will be written
@@ -60,146 +47,116 @@ Reconciliation: 3 kept + 3 dropped = 6 in
 DRILL PASSED: 3 dropped, 3 kept, nothing written
 ```
 
-**Before you move on, read the three `DROP` lines out loud to yourself.** Blank in one column, impossible value in another, bad date in the third — three different checks firing, three different reasons. That is what a real audit looks like when it finds something.
+Three rows, three different checks firing, three different reasons. That is what an audit looks like when it finds something.
 
-**Screenshot this terminal now.** It is the evidence that your checker works, and it is what I grade for rubric item D.
+**Screenshot this terminal.** It is the evidence that your checker works, and it is what I grade for rubric item D.
 
-**If the drill fails** (`DRILL FAILED: expected 3 dropped rows`): your checker is missing a defect. Fix the script before you build any chart — a chart built on an unverified file is exactly the problem this project is about.
+If your drill prints `DRILL FAILED`, one of your checks is missing. Find which of the three broken rows survived and fix that check before you build anything.
 
-### Step 3 — Confirm Chart 1 (2 min)
+Also confirm Chart 1 still regenerates (`python3 project_charts.py` should already write `chart1_timeline.png`).
 
-```bash
-python3 project_charts.py
+---
+
+## PART 1 — CHART 2: WEEKDAY VS WEEKEND (16 min)
+
+**The claim you are testing:** attacks follow the school week.
+
+Add this block to `project_charts.py`, after Chart 1:
+
+```python
+from datetime import datetime
+
+def is_weekend(d):
+    return datetime.strptime(d, "%Y-%m-%d").weekday() >= 5   # 5 = Sat, 6 = Sun
+
+wd, we = [], []
+for row in clean_rows:
+    (we if is_weekend(row["date"]) else wd).append(int(row["phishing_reports"]))
+
+avg_wd, avg_we = sum(wd) / len(wd), sum(we) / len(we)
+print(f"weekday {avg_wd:.2f} ({len(wd)} days) | weekend {avg_we:.2f} ({len(we)} days)")
+
+plt.figure(figsize=(6, 4))
+plt.bar(["Weekday", "Weekend"], [avg_wd, avg_we])
+plt.text(0, avg_wd, f"{avg_wd:.2f}", ha="center", va="bottom")
+plt.text(1, avg_we, f"{avg_we:.2f}", ha="center", va="bottom")
+plt.title("<your finding, for your audience>")
+plt.xlabel("Day type")
+plt.ylabel("Average phishing reports")
+plt.ylim(bottom=0)
+plt.tight_layout()
+plt.savefig("chart2_weekday_weekend.png")
+plt.clf()
 ```
 
-`chart1_timeline.png` should appear and match yesterday's. If it does not exist, building it is your first job today.
+**Graded:** title states the finding, not the subject; y-axis starts at 0; both averages printed on the chart; `savefig` before any `show`; `plt.clf()` after.
+
+**Check your arithmetic against the data:** weekday **7.98** over 44 days, weekend **2.88** over 16 days. Anything else is a bug in your grouping, not a discovery.
+
+**Then write the Chart 2 paragraph in `analysis.md`:** what the chart shows for your named audience, the one number they should notice, and one honest limitation (44 weekday days against 16 weekend days, so the weekend average is the shakier one).
 
 ---
 
-## PART 1 — THE CHECKLIST (25 min of work today)
+## PART 2 — CHART 3: LOGIN SUCCESS RATE (16 min)
 
-Work through this top to bottom. **Today's minimum: Chart 2 finished and pushed.** Do not write analysis for a chart that does not exist yet.
+Same pattern, different question: what shape does a rate have?
 
-### The audit (done yesterday, verified today)
+```python
+rates = [float(row["login_success_rate"]) for row in clean_rows]
 
-- ☐ `clean_threats.py` reads `data/u2_campus_threat_daily.csv` with `csv.DictReader`
-- ☐ Comment lines (starting with `#`) are stripped before parsing
-- ☐ Every row is checked and **each check prints PASS or FAIL with its count**
-- ☐ The real run writes `data/u2_campus_threat_daily_clean.csv` and refuses to write if any row fails
-- ☐ The `--drill` run drops exactly 3 rows, for 3 different reasons, and writes nothing
-- ☐ Dates are verified unique, one day apart, and inside 2026-10-05 to 2026-12-03
+plt.figure(figsize=(7, 4))
+plt.hist(rates, bins=15, edgecolor="white")
+plt.title("<your finding, for your audience>")
+plt.xlabel("Login success rate")
+plt.ylabel("Number of days")
+plt.tight_layout()
+plt.savefig("chart3_success_rate.png")
+plt.clf()
+```
 
-### Chart 1 — Daily timeline (line chart) — done in U2 L15
+Choose `bins=15` on purpose — 60 days into 15 bins, four days per bin, not the default ten.
 
-- ☐ `phishing_reports` and `failed_logins` plotted over the dates (two lines)
-- ☐ Different markers (`marker="o"`, `marker="s"`) and `alpha=0.7` so both are visible
-- ☐ Legend shows which line is which (`label=` + `plt.legend()`)
-- ☐ Title states the finding, audience-aware (e.g., "Phishing Reports Peak at 17 in Mid-October — Security Team Alert" vs "Campus Attacks Follow the School Week — Parents' View")
-- ☐ X-axis label: "Date", Y-axis label: "Count"
-- ☐ `plt.xticks(rotation=45)` + `plt.tight_layout()` so dates don't overlap
-- ☐ Y-axis starts at 0 (honest axis) — add `plt.ylim(bottom=0)` if needed
-- ☐ Saved as `chart1_timeline.png` with `plt.savefig()` **before** any `plt.show()`
-- ☐ `plt.clf()` after saving
+**The honest finding is not "most days near 100%."** In this file the median day sits at **0.56**, only 4 of 60 days are above 0.90, and 2026-10-24 collapses to **0.0**. A title like *"Most Days Sit Between 45% and 72% Login Success — One Day Collapses to 0%"* is defensible. A title claiming near-total success is false and I will mark it wrong: the chart does not say that.
 
-### Chart 2 — Weekday vs weekend (bar chart) — today's minimum
-
-- ☐ Compute averages separately for weekdays and weekends:
-  ```python
-  # Parse date string to determine weekday/weekend
-  from datetime import datetime
-  def is_weekend(date_str):
-      return datetime.strptime(date_str, "%Y-%m-%d").weekday() >= 5  # 5=Sat, 6=Sun
-  ```
-- ☐ Accumulate sums and counts for each group, then average (float division `/`, not `//`)
-- ☐ Two bars (or grouped bars if showing both phishing and failed logins), clearly labeled
-- ☐ **Put the two averages on the chart** (e.g. `plt.text()` or value labels) — a bar chart of two bars should show its two numbers
-- ☐ Title states the finding, audience-aware
-- ☐ X-axis label: "Day type", Y-axis label: "Average count" (or "Average failed logins")
-- ☐ Saved as `chart2_weekday_weekend.png`
-- ☐ `plt.clf()` after saving
-
-**Check your numbers against the real data:** weekday phishing reports average **7.98** (44 days), weekends **2.88** (16 days). Weekday failed logins **23.64**, weekends **7.19**. If your chart shows different averages, you have a bug in your grouping, not a discovery.
-
-### Chart 3 — Login success rate (histogram) — starts today, finishes in L17
-
-- ☐ Extract `login_success_rate` values from clean rows
-- ☐ Choose bin count **on purpose** (not default): `bins=15` is a good starting point for 0–1 rates
-- ☐ Title states the finding, audience-aware. This dataset's honest finding is **not** "most days near 100%": the median day sits at **0.56**, only 4 of 60 days are above 0.90, and one Saturday (2026-10-24) collapses to **0.0**. Something like "Most Days Sit Between 45% and 72% Login Success — One Day Collapses to 0%" is defensible; "Most Days Near 100%" is false and I will mark it wrong.
-- ☐ X-axis label: "Login success rate", Y-axis label: "Number of days"
-- ☐ `edgecolor="white"` so bins are separable
-- ☐ Saved as `chart3_success_rate.png`
-- ☐ `plt.clf()` after saving
-
-### Writing — one paragraph per chart in `analysis.md`
-
-Create `analysis.md` in your repo. For **each chart**, write one paragraph that includes:
-
-1. **What the chart shows, in plain words, for your named audience** — no jargon if audience is parents; technical terms OK for security team.
-2. **The one number or pattern you most want that audience to notice** — be specific: "phishing reports average 7.98 on weekdays against 2.88 on weekends, a 2.8× gap" not "there are spikes."
-3. **One honest limitation** — a gap in the data, a small sample (60 days), an outlier that might be noise, the synthetic nature of the data.
-
-**Example paragraph for Chart 1 (security team audience), written from the real numbers:**
-
-> This timeline shows daily phishing reports (blue circles) and failed logins (orange squares) across 60 days, from 2026-10-05 to 2026-12-03. Both metrics track the school week: phishing reports average 7.98 on weekdays against 2.88 on weekends, and failed logins average 23.64 against 7.19. The peak is 17 phishing reports on 2026-10-12, a Monday; Mondays average 9.6 reports versus 7.7 on Wednesdays, so the day-of-week pattern is real but milder than the weekday/weekend gap. Limitation: this is 60 days of synthetic data with one extreme low outlier (2026-10-24), so the weekday/weekend gap should be read as a pattern in this file, not a measured trend in real traffic.
+**Then write the Chart 3 paragraph**, including the limitation that a single outlier day drives the left tail, and what you would need to know before concluding anything about that day.
 
 ---
 
-## PART 2 — COMMON PITFALLS (5 min, then back to work)
+## PART 3 — PARTNER GLANCE (4 min)
 
-The three ways this project goes wrong, in order of how often I see them:
+Your partner looks at **Chart 3 only** and answers without your explanation: what does it say, and who is it for?
 
-1. **Charting a file nobody verified.** One blank or malformed row and your timeline has a hole or your histogram a phantom bin. **Audit first, always.** Your `clean_threats.py` output and your drill screenshot are the proof you did it.
-2. **Missing labels.** An untitled chart is a picture, not an analysis. If I have to guess what an axis means, the chart fails. **Title, x-label, y-label — every time.**
-3. **Uncommented chart code.** Each chart's block needs a one-line comment saying what it shows — future-you (and your reviewer tomorrow) needs the map.
-
-**If your PNGs are blank:** You called `plt.show()` before `plt.savefig()`, or you closed the figure before saving. Fix the order — **save then show**.
+One specific compliment, one specific suggestion. Fix it before you commit.
 
 ---
 
-## PART 3 — PARTNER SANITY-CHECK (5 min)
-
-Swap screens with your partner and look at **one** chart each:
-
-- Can you tell, from the chart alone, what it shows? **No explanation allowed first.**
-- Show your partner your drill screenshot. Can they tell what your checker catches?
-- Give **one specific compliment** and **one specific suggestion**. "Looks good" is not a review.
-
-**Fix anything your partner caught BEFORE you commit.**
-
----
-
-## PART 4 — SAVE YOUR WORK (5 min)
+## PART 4 — PUSH (4 min)
 
 ```bash
-cd ~/compmath-u2-data-lab
-git add clean_threats.py project_charts.py analysis.md chart1_timeline.png chart2_weekday_weekend.png
-git commit -m "project: audit drill proven, chart2 weekday vs weekend"
+git add clean_threats.py project_charts.py analysis.md chart2_weekday_weekend.png chart3_success_rate.png
+git commit -m "project: drill proven, chart2 weekday vs weekend, chart3 success rate"
 git push
 ```
 
-**Password prompt = Personal Access Token, not your GitHub password.**
-
-**Milestone for today:** drill screenshot taken, Chart 2 pushed with its analysis paragraph.
+Password prompt = Personal Access Token, not your GitHub password.
 
 ---
 
-## TURN IN — PULL REQUEST LINK (due 23:59 tonight)
+## TURN IN
 
-1. Screenshot of your `--drill` run: 3 `DROP` lines with 3 different reasons, then `DRILL PASSED`.
-2. Push your `project_charts.py`, `analysis.md`, `chart1_timeline.png`, `chart2_weekday_weekend.png`.
-3. On github.com, open or update a Pull Request from your repo back to the original repo (Contribute → Open pull request).
+1. Screenshot of the `--drill` run — 3 `DROP` lines with 3 different reasons, then `DRILL PASSED`.
+2. `chart2_weekday_weekend.png` and `chart3_success_rate.png` pushed, each with its paragraph in `analysis.md`.
+3. Your pull request link.
 
-Submit the PR link and the drill screenshot to the U2 L16 assignment on Google Classroom.
-
-**Early finishers:** start Chart 3 now (checklist above), or add the fourth "audience choice" chart from U2 L14.
+Submit all three to the U2 L16 assignment on Google Classroom.
 
 ---
 
-## WHY THIS MATTERS (the bigger picture)
+## WHY THIS MATTERS
 
-**The project is an argument, not an art show.** Every chart is a premise; the analysis paragraphs are the reasoning; the audit script and the drill are the evidence that the premises are sound. A checker that never fails is not a checker — the drill is what turns "I cleaned the data" into "I can prove this data is sound, and here is what my code would catch if it were not."
+A checker that never fails is not a checker. The drill turns "I cleaned the data" into "I can prove this file is sound, and here is what my code would catch if it were not." The two charts turn the audit into an argument.
 
-**U2 L17 (tomorrow) is peer review:** You will read a partner's full project and they will read yours. The review form asks: *Does the evidence support the claim? Is the audit auditable? Are the charts honest for the stated audience?* If your work today cannot answer "yes" to those, tomorrow's review will expose it.
+**Tomorrow (U2 L17) your partner reviews all three charts** for clarity, honesty, and impact, and you revise one from their feedback. If a chart does not exist by tonight, there is nothing to review.
 
 **Next:** U2 L17 — Reflection: Peer Review Of Visualizations  \
 [U2-L17-Reflection-Peer-Review-Of-Visualizations.md](U2-L17-Reflection-Peer-Review-Of-Visualizations.md)
