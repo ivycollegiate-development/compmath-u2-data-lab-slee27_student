@@ -1,10 +1,14 @@
-"""Self-check for the data-lab. Run: python3 self_check.py
+"""Self-check for the Unit 2 data lab. Run: python3 self_check.py
 
-Starts at 1 of 3 passing. Your job: make it 3 of 3, commit, push.
+Five checks. Run this from the repo root, after your audit script and charts exist.
 """
-import os, subprocess, csv, re
+import os
+import re
+import subprocess
+import csv
 
 results = []
+
 
 def check(name, fn):
     try:
@@ -14,34 +18,77 @@ def check(name, fn):
     results.append((name, ok, msg))
     print(("PASS  " if ok else "FAIL  ") + name + (f"  ({msg})" if msg and not ok else ""))
 
-def load_works():
-    p = subprocess.run(["python3", "load_data.py"], capture_output=True, text=True)
-    if p.returncode != 0:
-        return False, p.stderr.strip()[-120:]
-    m = re.search(r"rows loaded:\s*(\d+)", p.stdout)
-    n = int(m.group(1)) if m else 0
-    return (n >= 1000, f"rows loaded: {n} (expected 1000)" if n < 1000 else "")
 
-def clean_works():
-    path = "data/clean_student_performance.csv"
-    if not os.path.exists(path):
-        return False, "data/clean_student_performance.csv does not exist yet"
-    with open(path) as f:
-        rows = list(csv.reader(f))
-    if len(rows) < 2:
-        return False, "file has no data rows"
-    if any(any(cell.strip() == "" for cell in r) for r in rows[1:]):
-        return False, "still has blank cells in some rows"
+def audit_runs():
+    if not os.path.exists("clean_threats.py"):
+        return False, "clean_threats.py does not exist yet"
+    p = subprocess.run(["python3", "clean_threats.py"], capture_output=True, text=True)
+    out = p.stdout + p.stderr
+    if p.returncode != 0:
+        return False, out.strip().splitlines()[-1][:120] if out.strip() else "script failed"
+    if "All checks passed" not in out:
+        return False, "did not print 'All checks passed'"
+    if re.search(r"\[FAIL\]", out):
+        return False, "at least one check printed FAIL"
     return True, ""
 
-def project_works():
-    charts = ["timeline.png", "weekday.png", "histogram.png", "analysis.md"]
-    missing = [p for p in charts if not os.path.exists(p)]
-    return (len(missing) == 0, "missing: " + ", ".join(missing) if missing else "")
 
-check("load_data.py loads the full dataset", load_works)
-check("clean_data.py writes a clean CSV", clean_works)
-check("project.py builds 3 charts + analysis.md", project_works)
+def clean_file_ok():
+    path = "data/u2_campus_threat_daily_clean.csv"
+    if not os.path.exists(path):
+        return False, "data/u2_campus_threat_daily_clean.csv does not exist yet"
+    with open(path, newline="") as f:
+        rows = list(csv.reader(f))
+    header = ["date", "phishing_reports", "failed_logins", "phishing_clicks", "login_success_rate"]
+    if not rows or rows[0] != header:
+        return False, f"header is {rows[0] if rows else 'missing'}"
+    if len(rows) - 1 != 60:
+        return False, f"{len(rows) - 1} data rows, expected 60"
+    if any(any(cell.strip() == "" for cell in r) for r in rows[1:]):
+        return False, "still has blank cells"
+    return True, ""
+
+
+def drill_runs():
+    if not os.path.exists("clean_threats.py"):
+        return False, "clean_threats.py does not exist yet"
+    p = subprocess.run(["python3", "clean_threats.py", "--drill"], capture_output=True, text=True)
+    out = p.stdout + p.stderr
+    if "DRILL PASSED" not in out:
+        return False, "did not print 'DRILL PASSED'"
+    drops = out.count("  DROP ")
+    if drops != 3:
+        return False, f"{drops} DROP lines, expected 3"
+    return True, ""
+
+
+def charts_ok():
+    charts = ["chart1_timeline.png", "chart2_weekday_weekend.png", "chart3_success_rate.png"]
+    missing = [p for p in charts if not os.path.exists(p)]
+    if missing:
+        return False, "missing: " + ", ".join(missing)
+    small = [p for p in charts if os.path.getsize(p) < 5000]
+    if small:
+        return False, "suspiciously small (blank?): " + ", ".join(small)
+    return True, ""
+
+
+def analysis_ok():
+    if not os.path.exists("analysis.md"):
+        return False, "analysis.md does not exist yet"
+    with open("analysis.md") as f:
+        text = f.read()
+    paragraphs = [p for p in re.split(r"\n\s*\n", text) if len(p.strip()) > 120]
+    if len(paragraphs) < 3:
+        return False, f"{len(paragraphs)} substantial paragraphs, expected at least 3"
+    return True, ""
+
+
+check("clean_threats.py audits the real file", audit_runs)
+check("data/u2_campus_threat_daily_clean.csv is 60 rows, 5 columns, no blanks", clean_file_ok)
+check("clean_threats.py --drill drops 3 rows", drill_runs)
+check("all three chart PNGs exist and are not blank", charts_ok)
+check("analysis.md has three paragraphs", analysis_ok)
 
 passed = sum(1 for _, ok, _ in results if ok)
 print(f"\n{passed} of {len(results)} checks passing")
