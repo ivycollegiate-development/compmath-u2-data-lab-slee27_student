@@ -91,9 +91,9 @@ plt.clf()
 
 **Graded:** title states the finding, not the subject; y-axis starts at 0; both averages printed on the chart; `savefig` before any `show`; `plt.clf()` after.
 
-**Check your arithmetic against the data:** weekday **7.98** over 44 days, weekend **2.88** over 16 days. Anything else is a bug in your grouping, not a discovery.
+**Check your arithmetic against the data:** weekday **9.77** over 44 days, weekend **1.75** over 16 days. Anything else is a bug in your grouping, not a discovery.
 
-**Then write the Chart 2 paragraph in `analysis.md`:** what the chart shows for your named audience, the one number they should notice, and one honest limitation (44 weekday days against 16 weekend days, so the weekend average is the shakier one).
+**Create `analysis.md` in the repo root, then write the Chart 2 paragraph in it:** what the chart shows for your named audience, the one number they should notice, and one honest limitation (44 weekday days against 16 weekend days, so the weekend average is the shakier one).
 
 ---
 
@@ -116,7 +116,7 @@ plt.clf()
 
 Choose `bins=15` on purpose — 60 days into 15 bins, four days per bin, not the default ten.
 
-**The honest finding is not "most days near 100%."** In this file the median day sits at **0.56**, only 4 of 60 days are above 0.90, and 2026-10-24 collapses to **0.0**. A title like *"Most Days Sit Between 45% and 72% Login Success — One Day Collapses to 0%"* is defensible. A title claiming near-total success is false and I will mark it wrong: the chart does not say that.
+**The honest finding is not "every day is 100%."** In this file the median day sits at **0.995**, four of 60 days fall below 0.990, and the worst day, 2026-11-04, drops to **0.958**. A title like *"Most Days Sit Above 99% Login Success — Four Days Drop Below 99%"* is defensible. A title claiming total success is false and I will mark it wrong: the chart does not say that.
 
 **Then write the Chart 3 paragraph**, including the limitation that a single outlier day drives the left tail, and what you would need to know before concluding anything about that day.
 
