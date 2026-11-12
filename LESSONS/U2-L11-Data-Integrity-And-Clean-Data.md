@@ -49,7 +49,13 @@ for col in ['Math Score', 'English Score', 'Science Score', 'Overall GPA', 'Hour
 
 ## PART 2 — THE CLEANING PIPELINE (30 min)
 
-Open `clean_data.py`. It is a skeleton — you will implement it.
+`clean_data.py` already exists in your repo — you do not create it, you implement it. Open it in VS Code:
+
+```bash
+cd ~/compmath-u2-data-lab
+git pull
+code clean_data.py
+```
 
 **Your pipeline must:**
 1. Load the raw CSV (filter comments/blanks)

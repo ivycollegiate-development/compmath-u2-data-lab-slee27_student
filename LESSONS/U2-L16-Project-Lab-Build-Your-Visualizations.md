@@ -70,7 +70,7 @@ def is_weekend(d):
     return datetime.strptime(d, "%Y-%m-%d").weekday() >= 5   # 5 = Sat, 6 = Sun
 
 wd, we = [], []
-for row in clean_rows:
+for row in rows:
     (we if is_weekend(row["date"]) else wd).append(int(row["phishing_reports"]))
 
 avg_wd, avg_we = sum(wd) / len(wd), sum(we) / len(we)
@@ -102,7 +102,7 @@ plt.clf()
 Same pattern, different question: what shape does a rate have?
 
 ```python
-rates = [float(row["login_success_rate"]) for row in clean_rows]
+rates = [float(row["login_success_rate"]) for row in rows]
 
 plt.figure(figsize=(7, 4))
 plt.hist(rates, bins=15, edgecolor="white")

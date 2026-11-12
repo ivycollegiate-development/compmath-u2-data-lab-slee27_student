@@ -55,7 +55,15 @@ date, phishing_reports, failed_logins, phishing_clicks, login_success_rate
 
 ## PART 1 — AUDIT THE THREAT DATA (15 min)
 
-Create `clean_threats.py` in your repo. This is your **audit script** — it gets submitted with your charts.
+Create `clean_threats.py` in your repo, then open it:
+
+```bash
+cd ~/compmath-u2-data-lab
+touch clean_threats.py
+code clean_threats.py
+```
+
+This is your **audit script** — it gets submitted with your charts.
 
 Your script runs four checks, and it must report the result of each one, not just "done":
 
@@ -295,7 +303,12 @@ On paper (your break notes or fresh), finalize:
 
 ## PART 3 — BUILD CHART 1: DAILY TIMELINE (12 min)
 
-Create `project_charts.py` in your repo. Start with Chart 1:
+Create `project_charts.py`, then open it. Start with Chart 1:
+
+```bash
+touch project_charts.py
+code project_charts.py
+```
 
 ```python
 import csv

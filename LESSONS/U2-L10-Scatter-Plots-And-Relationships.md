@@ -19,6 +19,16 @@ git pull
 
 A scatter plot shows the relationship between **two numeric columns**. Each point = one row.
 
+Everything today goes in one script, `scatter_plots.py`. Create it, then open it:
+
+```bash
+cd ~/compmath-u2-data-lab
+touch scatter_plots.py
+code scatter_plots.py
+```
+
+Put this in `scatter_plots.py`:
+
 ```python
 import csv
 import matplotlib.pyplot as plt
@@ -40,7 +50,13 @@ plt.grid(True, alpha=0.3)
 plt.savefig("scatter_study_gpa.png", dpi=150, bbox_inches="tight")
 ```
 
-**Run it and open the image.** What do you see?
+Save the file, run it, and open the image:
+
+```bash
+python3 scatter_plots.py
+```
+
+What do you see?
 
 ---
 
@@ -115,7 +131,7 @@ Answer:
 - Write one "correlation ≠ causation" alternative for that pair.
 
 ```bash
-git add *.png journal-$(whoami).md
+git add scatter_plots.py *.png journal-$(whoami).md
 git commit -m "L10: three scatter plots with labels"
 git push
 ```

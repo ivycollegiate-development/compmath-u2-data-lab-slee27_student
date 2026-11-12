@@ -67,7 +67,15 @@ print(f"Median: {statistics.median(math_scores):.1f}")
 
 ## PART 3 — LOAD DATA SCRIPT (20 min)
 
-Open `load_data.py`. It is a starter — you will extend it today. Run it:
+`load_data.py` already exists in your repo — you do not create it today, you extend it. Open it in VS Code:
+
+```bash
+cd ~/compmath-u2-data-lab
+git pull
+code load_data.py
+```
+
+Run it:
 
 ```bash
 python3 load_data.py
