@@ -106,12 +106,12 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 # --drill injects these rows in memory. Nothing is written in drill mode.
 DRILL_TEXT = """# drill file -- 3 good rows, 3 broken rows
 date,phishing_reports,failed_logins,phishing_clicks,login_success_rate
-2026-10-05,12,33,5,0.4
-2026-10-06,9,21,4,0.52
-2026-10-07,8,19,3,0.58
-2026-10-08,,14,2,0.61
-2026-10-09,7,17,1,1.4
-2026-10-1X,6,15,2,0.49
+2026-10-05,9,28,2,0.994
+2026-10-06,11,31,3,0.992
+2026-10-07,6,22,1,0.995
+2026-10-08,,19,2,0.993
+2026-10-09,8,24,1,1.4
+2026-10-1X,7,20,2,0.991
 """
 
 def check(label, ok, detail=""):
