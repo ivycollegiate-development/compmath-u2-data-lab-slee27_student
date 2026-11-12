@@ -165,11 +165,17 @@ for r in rows:
     if not DATE_RE.match(raw_date):
         reason, bucket = f"bad date {raw_date!r} (not YYYY-MM-DD)", "bad date"
     else:
-        d = date(*map(int, raw_date.split("-")))
-        if not (FIRST_DAY <= d <= LAST_DAY):
-            reason, bucket = f"bad date {raw_date} (outside {FIRST_DAY}..{LAST_DAY})", "bad date"
-        elif d in seen:
-            reason, bucket = f"bad date {raw_date} (duplicate)", "bad date"
+        try:
+            d = date(*map(int, raw_date.split("-")))
+        except ValueError:
+            # "2026-02-30" matches the pattern but is not a real day
+            d = None
+            reason, bucket = f"bad date {raw_date} (not a real calendar date)", "bad date"
+        if d is not None:
+            if not (FIRST_DAY <= d <= LAST_DAY):
+                reason, bucket = f"bad date {raw_date} (outside {FIRST_DAY}..{LAST_DAY})", "bad date"
+            elif d in seen:
+                reason, bucket = f"bad date {raw_date} (duplicate)", "bad date"
 
     for col in ("phishing_reports", "failed_logins", "phishing_clicks") if not reason else []:
         if (r.get(col) or "").strip() == "":
@@ -259,7 +265,7 @@ else:
 python3 clean_threats.py
 ```
 
-**Expected output — five lines of evidence, then the verdict:**
+**Expected output — six lines of evidence, then the verdict:**
 ```
 Rows in: 60
 Checks:
@@ -319,13 +325,13 @@ with open("data/u2_campus_threat_daily_clean.csv", newline="") as f:
 
 # Data is already sorted by date in the file
 dates = [r["date"] for r in rows]
-phishing = [r["phishing_reports"] for r in rows]
-failed = [r["failed_logins"] for r in rows]
+phishing = [int(r["phishing_reports"]) for r in rows]
+failed = [int(r["failed_logins"]) for r in rows]
 
 plt.figure(figsize=(10, 5))
 plt.plot(dates, phishing, marker="o", label="Phishing reports", alpha=0.7)
 plt.plot(dates, failed, marker="s", label="Failed logins", alpha=0.7)
-plt.title("Daily Phishing Reports and Failed Logins — Oct 5 to Dec 3, 2026")
+plt.title("Phishing Reports and Failed Logins Rise Together on Campaign Days")
 plt.xlabel("Date")
 plt.ylabel("Count")
 plt.legend()

@@ -67,7 +67,7 @@ Add this block to `project_charts.py`, after Chart 1:
 from datetime import datetime
 
 def is_weekend(d):
-    return datetime.strptime(d, "%Y-%m-%d").weekday() >= 5   # 5 = Sat, 6 = Sun
+    return datetime.strptime(d, "%Y-%m-%d").weekday() >= 5   # 5 and 6 are weekend positions
 
 wd, we = [], []
 for row in rows:
